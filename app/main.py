@@ -33,11 +33,6 @@ db: List[User] = [
 ]'''
 
 
-@app.get("/api/v1/users")
-async def fetch_users():
-    return db
-
-
 @app.get("/")
 def root():
     return listData
