@@ -24,6 +24,7 @@ Flask-Compress==1.10.1
 graphql-core==2.3.2
 graphql-relay==2.0.1
 greenlet==1.1.1
+gunicorn==20.1.0
 h11==0.12.0
 httptools==0.1.2
 idna==3.2
@@ -37,7 +38,7 @@ plotly==5.5.0
 promise==2.3
 psycopg==3.0.8
 pyasn1==0.4.8
-pycodestyle==2.8.0
+pycodestyle==2.7.0
 pycparser==2.20
 pydantic==1.8.2
 pyorbital==1.7.1
