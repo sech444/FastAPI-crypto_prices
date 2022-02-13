@@ -33,7 +33,7 @@ db: List[User] = [
 ]'''
 
 
-@app.get("/")
+@app.get("/list")
 def root():
     return listData
 
