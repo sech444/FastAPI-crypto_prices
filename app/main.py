@@ -249,7 +249,7 @@ async def Get_bals(background_tasks: BackgroundTasks,user_adr: str = Form(...)):
 
 
 
-@app.post("/api/tarnsaction")
+@app.post("/api/eth_tarnsaction")
 async def tarnsaction(background_tasks:BackgroundTasks,account_from:str = Form(...), account_to: str = Form(...),value_to_send: float=Form(...), private_key: str=Form(...)):
     account_1 = account_from 
     account_2 = account_to 
@@ -279,7 +279,7 @@ async def tarnsaction(background_tasks:BackgroundTasks,account_from:str = Form(.
    
         
 
-@app.post('/api/tx_hash')
+@app.post('/api/eth_tx_hash')
 async def transaction_receipt(background_tasks:BackgroundTasks,tx_hash:str = Form(...),webhook_url:str = Form(...)) -> dict():
     
     receipt_ = w3.eth.get_transaction_receipt(tx_hash)
