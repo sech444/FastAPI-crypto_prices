@@ -293,6 +293,18 @@ async def transaction_receipt(background_tasks:BackgroundTasks,tx_hash:str = For
 
     return {"data" : w3.toJSON(receipt_ )}
 
+
+@app.get('/api/btc_wallet')
+async def bitcoin_wallet():
+    private_key = random_key()
+    pubilc_key = privtopub(private_key)
+    address = pubtoaddr(pubilc_key)
+    
+    return {"private_key":private_key,
+            "pubilc_key": pubilc_key,
+            "address" :  address
+             }
+
    
  
 
