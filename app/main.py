@@ -5,8 +5,8 @@ from uuid import uuid4
 from fastapi.params import Body
 from pydantic import BaseModel 
 from fastapi.security import OAuth2PasswordBearer
-#from sqlalchemy.orm import Session
-#from ethereumweb3 import Get_bals , send_transactions, transaction_receipt
+from eth_account import Account
+import secrets
 from fastapi import FastAPI, WebSocket, BackgroundTasks, APIRouter, Depends, status, HTTPException, Form
 import json
 import requests
