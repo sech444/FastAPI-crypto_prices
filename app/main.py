@@ -80,7 +80,7 @@ def main():
 
 
 @app.get('/btcusd')
-async def index(background_tasks: BackgroundTasks):
+async def btcusd(background_tasks: BackgroundTasks):
     background_tasks.add_task(main)
     return {
         "coin": "BTC",
@@ -114,8 +114,8 @@ def main_bch():
     return
 
 
-@app.get('/api/v1/bch')
-async def index_bch(background_tasks: BackgroundTasks):
+@app.get('/api/v1/bchusd')
+async def bchusd(background_tasks: BackgroundTasks):
     background_tasks.add_task(main_bch)
     return {
         "coin": "BCH",
@@ -150,7 +150,7 @@ def main_xlmusd():
 
 
 @app.get('/api/v1/xlmusd')
-async def index_xlmusd(background_tasks: BackgroundTasks):
+async def xlmusd(background_tasks: BackgroundTasks):
     background_tasks.add_task(main_bch)
     return {
         "coin": "XLM",
@@ -184,8 +184,8 @@ def main_ltc():
     return
 
 
-@app.get('/api/v1/ltc')
-async def index_ltc(background_tasks: BackgroundTasks):
+@app.get('/api/v1/ltcusd')
+async def ltcusd(background_tasks: BackgroundTasks):
     background_tasks.add_task(main_ltc)
     return {
         "coin": "ltc",
@@ -224,8 +224,8 @@ def main_dash():
 # print(main_xlmusd())
 
 
-@app.get('/api/v1/dash')
-async def index_dash(background_tasks: BackgroundTasks):
+@app.get('/api/v1/dashusd')
+async def dashusd(background_tasks: BackgroundTasks):
     background_tasks.add_task(main_dash)
     return {
         "coin": "ltc",
@@ -236,8 +236,8 @@ async def index_dash(background_tasks: BackgroundTasks):
 
 
 
-@app.post("/get_bals")
-async def Get_bals(background_tasks: BackgroundTasks,user_adr: str = Form(...)):
+@app.post("/get_eth_bals")
+async def Get_eth_bals(background_tasks: BackgroundTasks,user_adr: str = Form(...)):
     background_tasks.add_task(Get_bals(user_adr))
     try:
         _trans = w3.eth.get_balance(user_adr)
