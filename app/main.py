@@ -228,8 +228,8 @@ def main_dash():
 async def dashusd(background_tasks: BackgroundTasks):
     background_tasks.add_task(main_dash)
     return {
-        "coin": "ltc",
-        "name": "Litecoin",
+        "coin": "dash",
+        "name": "Dash",
         "rate": getDashcoinPrice("crypto_dash"),
         "coin_logo": "assets\/img\/xlm.png"
     }
@@ -249,7 +249,7 @@ async def Get_eth_bals(background_tasks: BackgroundTasks,user_adr: str = Form(..
 
 
 
-@app.post("/api/eth_tarnsaction")
+@app.post("/api/v1/eth_tarnsaction")
 async def tarnsaction(background_tasks:BackgroundTasks,account_from:str = Form(...), account_to: str = Form(...),value_to_send: float=Form(...), private_key: str=Form(...)):
     account_1 = account_from 
     account_2 = account_to 
@@ -279,7 +279,7 @@ async def tarnsaction(background_tasks:BackgroundTasks,account_from:str = Form(.
    
         
 
-@app.post('/api/eth_tx_hash')
+@app.post('/api/v1/eth_tx_hash')
 async def transaction_receipt(background_tasks:BackgroundTasks,tx_hash:str = Form(...),webhook_url:str = Form(...)) -> dict():
     
     receipt_ = w3.eth.get_transaction_receipt(tx_hash)
@@ -294,7 +294,17 @@ async def transaction_receipt(background_tasks:BackgroundTasks,tx_hash:str = For
     return {"data" : w3.toJSON(receipt_ )}
 
 
-@app.get('/api/btc_wallet')
+@app.get('/api/v1/eth_wallet')
+async def eth_wallet():
+    priv = secrets.token_hex(32)
+    private_key = "0x" + priv
+    acct = Account.from_key(private_key)
+    return{"private_key": private_key,
+           "Address": acct.address}
+
+
+
+@app.get('/api/v1/btc_wallet')
 async def bitcoin_wallet():
     private_key = random_key()
     pubilc_key = privtopub(private_key)
