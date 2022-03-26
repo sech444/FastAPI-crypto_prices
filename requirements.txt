@@ -3,6 +3,7 @@ aiosignal==1.2.0
 aniso8601==7.0.0
 anyio==3.5.0
 asgiref==3.5.0
+asn1crypto==1.5.1
 async-timeout==4.0.2
 asyncio==3.4.3
 attrs==21.4.0
@@ -10,9 +11,14 @@ autobahn==22.2.2
 Automat==20.2.0
 autopep8==1.6.0
 base58==2.1.1
-beautifulsoup4==4.10.0
 bitarray==1.2.2
+BitCash==0.6.6
+bitcoin==1.1.39
+bitcoin-explorer==1.2.17
+bitcoinlib==0.6.4
 black==22.1.0
+blockchain==1.4.4
+blockcypher==1.0.93
 broadcaster==0.2.0
 Brotli==1.0.9
 certifi==2021.10.8
@@ -20,8 +26,10 @@ cffi==1.14.6
 channels==3.0.4
 charset-normalizer==2.0.12
 click==8.0.4
+coincurve==17.0.0
 constantly==15.1.0
 cryptography==36.0.1
+cryptos==1.36
 Cython==0.29.28
 cytoolz==0.11.2
 daphne==3.0.2
@@ -79,6 +87,7 @@ plotly==5.5.0
 promise==2.3
 protobuf==3.19.4
 psycopg==3.0.8
+pyaes==1.6.1
 pyasn1==0.4.8
 pyasn1-modules==0.2.8
 pycodestyle==2.8.0
@@ -102,11 +111,13 @@ rsa==4.7.2
 Rx==1.6.1
 schedule==1.1.0
 scipy==1.7.3
+scrypt==0.8.20
 service-identity==21.1.0
 shrimpy-python==0.0.15
 six==1.16.0
 sniffio==1.2.0
 soupsieve==2.3.1
+SQLAlchemy==1.4.32
 sqlparse==0.4.2
 starlette==0.17.1
 tenacity==8.0.1
