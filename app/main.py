@@ -241,6 +241,75 @@ async def dashusd(background_tasks: BackgroundTasks):
         "coin_logo": "assets\/img\/xlm.png"
     }
 
+def getxrpusdPrice(crypto_xrpusd):
+    URL = 'https://www.bitstamp.net/api/v2/ticker/xrpusd/'
+    try:
+        r = requests.get(URL)
+        priceFloat = float(json.loads(r.text)['last'])
+        return priceFloat
+    except requests.ConnectionError:
+        print("Error querying Bitstamp API")
+
+
+def main_xrp():
+    last_price = -1
+
+    while True:
+
+        crypto_xrp = 'Proton'
+        price = getLtccoinPrice(crypto_xrp)
+
+        if price != last_price:
+           # print('Bitcoin price: ',price)
+            last_price = price
+    return
+
+
+@app.get('/api/v1/xrpusd')
+async def index_xrp(background_tasks: BackgroundTasks):
+    background_tasks.add_task(main_xrp)
+    return {
+        "coin": "xrp",
+        "name": "Proton",
+        "rate": getxrpusdPrice("Proton"),
+        "coin_logo": "assets\/img\/xlm.png"
+    }
+ 
+    
+
+def getethercoinPrice(crypto_ether):
+    URL = 'https://www.bitstamp.net/api/v2/ticker/ethusd/'
+    try:
+        r = requests.get(URL)
+        priceFloat = float(json.loads(r.text)['last'])
+        return priceFloat
+    except requests.ConnectionError:
+        print("Error querying Bitstamp API")
+
+
+def main_ether():
+    last_price = -1
+
+    while True:
+
+        crypto_ether = 'ether'
+        price = getethercoinPrice(crypto_ether)
+
+        if price != last_price:
+           # print('Bitcoin price: ',price)
+            last_price = price
+    return
+
+
+@app.get('/api/v1/ethusd')
+async def index_ether(background_tasks: BackgroundTasks):
+    background_tasks.add_task(main_ether)
+    return {
+        "coin": "ether",
+        "name": "Ethereum",
+        "rate": getethercoinPrice("ether"),
+        "coin_logo": "assets\/img\/xlm.png"
+    }
 
 
 @app.post("/get_eth_bals")
@@ -357,6 +426,12 @@ listData = [
         "coin_logo": "assets\/img\/ltc.png"
     },
     {
+        "coin": "xrp",
+        "name": "Proton",
+        "rate": getxrpusdPrice("Proton"),
+        "coin_logo": "assets\/img\/xlm.png"
+    },
+    {
         "coin": "dash",
         "name": "dash",
         "rate": getDashcoinPrice("crypto_dash"),
@@ -367,8 +442,15 @@ listData = [
         "name": "Stellar",
         "rate": getXlmucoinPrice("stellar"),
         "coin_logo": "assets\/img\/xlm.png"
+    },
+    {
+        "coin": "ether",
+        "name": "Ethereum",
+        "rate": getethercoinPrice("ether"),
+        "coin_logo": "assets\/img\/xlm.png"
     }
 ]
+
 
 """
 sechmos
