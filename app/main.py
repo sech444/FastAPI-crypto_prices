@@ -10,7 +10,7 @@ from random import randrange
 from fastapi.security import OAuth2PasswordBearer
 import secrets
 from eth_account import Account
-#from sqlalchemy.orm import Session
+from pywallet import wallet
 #from ethereumweb3 import Get_bals , send_transactions, transaction_receipt
 from fastapi import FastAPI, WebSocket, BackgroundTasks, APIRouter, Depends, status, HTTPException, Form
 import json
@@ -18,11 +18,9 @@ import requests
 from array import *
 from bitcoin import *
 
-
 #webhook_url = "https://webhook.site/efac6181-8311-4cd1-86f3-c7a45f2b1a04"
 
 #app = FastAPI(title=settings.PROJECT_NAME,version=settings.PROJECT_VERSION)
-# print("7dbec09e214cab2b4f77636cd082c65f85442d0ea65a59c28aa177158c4fe0c0")
 
 w3 = Web3(Web3.HTTPProvider('https://eth.getblock.io/rinkeby/?api_key=a8064b26-3884-47bb-92dc-5331a2213e3d'))
 #w3.middleware_onion.inject(geth_poa_middleware, layer=0)
@@ -87,7 +85,7 @@ def main():
 
 
 @app.get('/btcusd')
-async def btcusd(background_tasks: BackgroundTasks):
+async def index(background_tasks: BackgroundTasks):
     background_tasks.add_task(main)
     return {
         "coin": "BTC",
@@ -121,8 +119,8 @@ def main_bch():
     return
 
 
-@app.get('/api/v1/bchusd')
-async def bchusd(background_tasks: BackgroundTasks):
+@app.get('/api/v1/bch')
+async def index_bch(background_tasks: BackgroundTasks):
     background_tasks.add_task(main_bch)
     return {
         "coin": "BCH",
@@ -156,126 +154,17 @@ def main_xlmusd():
     return
 
 
-@app.get('/api/v1/xlmusd')
-async def xlmusd(background_tasks: BackgroundTasks):
+
+@app.get('/api/v1/bch')
+async def index_bch(background_tasks: BackgroundTasks):
     background_tasks.add_task(main_bch)
     return {
-        "coin": "XLM",
-        "name": "Stellar",
-        "rate": getXlmucoinPrice("xlmusd"),
+        "coin": "BCH",
+        "name": "Bitcoin Cash",
+        "rate": get_price_bch("bitcoin_cash"),
         "coin_logo": "assets\/img\/xlm.png"
     }
 
-
-def getLtccoinPrice(crypto_ltc):
-    URL = 'https://www.bitstamp.net/api/v2/ticker/ltcusd/'
-    try:
-        r = requests.get(URL)
-        priceFloat = float(json.loads(r.text)['last'])
-        return priceFloat
-    except requests.ConnectionError:
-        print("Error querying Bitstamp API")
-
-
-def main_ltc():
-    last_price = -1
-
-    while True:
-
-        crypto_ltc = 'litecoin'
-        price = getLtccoinPrice(crypto_ltc)
-
-        if price != last_price:
-           # print('Bitcoin price: ',price)
-            last_price = price
-    return
-
-
-@app.get('/api/v1/ltcusd')
-async def ltcusd(background_tasks: BackgroundTasks):
-    background_tasks.add_task(main_ltc)
-    return {
-        "coin": "ltc",
-        "name": "Litecoin",
-        "rate": getLtccoinPrice('litercoin'),
-        "coin_logo": "assets\/img\/xlm.png"
-    }
-
-
-def getDashcoinPrice(crypto_dash):
-    URL = 'https://www.dashcentral.org/api/v1/public'
-    try:
-        r = requests.get(URL)
-        priceFloat = json.loads(r.text)
-        #ans = json.loads(priceFloat)
-        # print(priceFloat)
-        data = (priceFloat['exchange_rates'])
-    except requests.ConnectionError:
-        print("Error querying Bitstamp API")
-    return data['dash_usd']
-# print('Dash:',getDashcoinPrice(crypto_dash))
-
-
-def main_dash():
-    last_price = -1
-
-    while True:
-
-        crypto_dash = 'dash'
-        price = getDashcoinPrice(crypto_dash)
-
-        if price != last_price:
-            #print('Dashcoin price: ',price)
-            last_price = price
-    return
-# print(main_xlmusd())
-
-
-@app.get('/api/v1/dashusd')
-async def dashusd(background_tasks: BackgroundTasks):
-    background_tasks.add_task(main_dash)
-    return {
-        "coin": "dash",
-        "name": "Dash",
-        "rate": getDashcoinPrice("crypto_dash"),
-        "coin_logo": "assets\/img\/xlm.png"
-    }
-
-def getxrpusdPrice(crypto_xrpusd):
-    URL = 'https://www.bitstamp.net/api/v2/ticker/xrpusd/'
-    try:
-        r = requests.get(URL)
-        priceFloat = float(json.loads(r.text)['last'])
-        return priceFloat
-    except requests.ConnectionError:
-        print("Error querying Bitstamp API")
-
-
-def main_xrp():
-    last_price = -1
-
-    while True:
-
-        crypto_xrp = 'Proton'
-        price = getLtccoinPrice(crypto_xrp)
-
-        if price != last_price:
-           # print('Bitcoin price: ',price)
-            last_price = price
-    return
-
-
-@app.get('/api/v1/xrpusd')
-async def index_xrp(background_tasks: BackgroundTasks):
-    background_tasks.add_task(main_xrp)
-    return {
-        "coin": "xrp",
-        "name": "Proton",
-        "rate": getxrpusdPrice("Proton"),
-        "coin_logo": "assets\/img\/xlm.png"
-    }
- 
-    
 
 def getethercoinPrice(crypto_ether):
     URL = 'https://www.bitstamp.net/api/v2/ticker/ethusd/'
@@ -312,8 +201,160 @@ async def index_ether(background_tasks: BackgroundTasks):
     }
 
 
-@app.post("/get_eth_bals")
-async def Get_eth_bals(background_tasks: BackgroundTasks,user_adr: str = Form(...)):
+def getXlmcoinPrice(crypto_xlmusd):
+    URL = 'https://www.bitstamp.net/api/v2/ticker/xlmusd/'
+    try:
+        r = requests.get(URL)
+        priceFloat = float(json.loads(r.text)['last'])
+        return priceFloat
+    except requests.ConnectionError:
+        print("Error querying Bitstamp API xlmusd")
+
+
+def main_Xlm():
+    last_price = -1
+
+    while True:
+
+        crypto_xlmusd = 'Stellar'
+        price = getXlmcoinPrice(crypto_xlmusd)
+
+        if price != last_price:
+           # print('Bitcoin price: ',price)
+            last_price = price
+    return
+
+
+@app.get('/api/v1/xlmusd')
+async def index_Stellar(background_tasks: BackgroundTasks):
+    background_tasks.add_task(main_xlm)
+    return {
+        "coin": "xlm",
+        "name": "Stellar",
+        "rate": getXlmucoinPrice("stellar"),
+        "coin_logo": "assets\/img\/xlm.png"
+    }
+
+
+
+
+
+def getLtccoinPrice(crypto_ltc):
+    URL = 'https://www.bitstamp.net/api/v2/ticker/ltcusd/'
+    try:
+        r = requests.get(URL)
+        priceFloat = float(json.loads(r.text)['last'])
+        return priceFloat
+    except requests.ConnectionError:
+        print("Error querying Bitstamp API")
+
+
+def main_ltc():
+    last_price = -1
+
+    while True:
+
+        crypto_ltc = 'litecoin'
+        price = getLtccoinPrice(crypto_ltc)
+
+        if price != last_price:
+           # print('Bitcoin price: ',price)
+            last_price = price
+    return
+
+
+@app.get('/api/v1/ltc')
+async def index_ltc(background_tasks: BackgroundTasks):
+    background_tasks.add_task(main_ltc)
+    return {
+        "coin": "ltc",
+        "name": "Litecoin",
+        "rate": getLtccoinPrice('litercoin'),
+        "coin_logo": "assets\/img\/xlm.png"
+    }
+    
+
+def getxrpusdPrice(crypto_xrpusd):
+    URL = 'https://www.bitstamp.net/api/v2/ticker/xrpusd/'
+    try:
+        r = requests.get(URL)
+        priceFloat = float(json.loads(r.text)['last'])
+        return priceFloat
+    except requests.ConnectionError:
+        print("Error querying Bitstamp API")
+
+
+def main_xrp():
+    last_price = -1
+
+    while True:
+
+        crypto_xrp = 'Proton'
+        price = getLtccoinPrice(crypto_xrp)
+
+        if price != last_price:
+           # print('Bitcoin price: ',price)
+            last_price = price
+    return
+
+
+@app.get('/api/v1/xrpusd')
+async def index_xrp(background_tasks: BackgroundTasks):
+    background_tasks.add_task(main_xrp)
+    return {
+        "coin": "xrp",
+        "name": "Proton",
+        "rate": getxrpusdPrice("Proton"),
+        "coin_logo": "assets\/img\/xlm.png"
+    }
+   
+    
+    
+
+
+def getDashcoinPrice(crypto_dash):
+    URL = 'https://www.dashcentral.org/api/v1/public'
+    try:
+        r = requests.get(URL)
+        priceFloat = json.loads(r.text)
+        #ans = json.loads(priceFloat)
+        # print(priceFloat)
+        data = (priceFloat['exchange_rates'])
+    except requests.ConnectionError:
+        print("Error querying Bitstamp API")
+    return data['dash_usd']
+# print('Dash:',getDashcoinPrice(crypto_dash))
+
+
+def main_dash():
+    last_price = -1
+
+    while True:
+
+        crypto_dash = 'dash'
+        price = getDashcoinPrice(crypto_dash)
+
+        if price != last_price:
+            #print('Dashcoin price: ',price)
+            last_price = price
+    return
+# print(main_xlmusd())
+
+
+@app.get('/api/v1/dash')
+async def index_dash(background_tasks: BackgroundTasks):
+    background_tasks.add_task(main_dash)
+    return {
+        "coin": "ltc",
+        "name": "Litecoin",
+        "rate": getDashcoinPrice("crypto_dash"),
+        "coin_logo": "assets\/img\/xlm.png"
+    }
+
+
+
+@app.post("/get_bals")
+async def Get_bals(background_tasks: BackgroundTasks,user_adr: str = Form(...)):
     background_tasks.add_task(Get_bals(user_adr))
     try:
         _trans = w3.eth.get_balance(user_adr)
@@ -325,7 +366,7 @@ async def Get_eth_bals(background_tasks: BackgroundTasks,user_adr: str = Form(..
 
 
 
-@app.post("/api/v1/eth_tarnsaction")
+@app.post("/api/tarnsaction")
 async def tarnsaction(background_tasks:BackgroundTasks,account_from:str = Form(...), account_to: str = Form(...),value_to_send: float=Form(...), private_key: str=Form(...)):
     account_1 = account_from 
     account_2 = account_to 
@@ -355,7 +396,7 @@ async def tarnsaction(background_tasks:BackgroundTasks,account_from:str = Form(.
    
         
 
-@app.post('/api/v1/eth_tx_hash')
+@app.post('/api/tx_hash')
 async def transaction_receipt(background_tasks:BackgroundTasks,tx_hash:str = Form(...),webhook_url:str = Form(...)) -> dict():
     
     receipt_ = w3.eth.get_transaction_receipt(tx_hash)
@@ -369,7 +410,6 @@ async def transaction_receipt(background_tasks:BackgroundTasks,tx_hash:str = For
 
     return {"data" : w3.toJSON(receipt_ )}
 
-
 @app.get('/api/v1/eth_wallet')
 async def eth_wallet():
     priv = secrets.token_hex(32)
@@ -380,7 +420,7 @@ async def eth_wallet():
 
 
 
-@app.get('/api/v1/btc_wallet')
+@app.get('/api/btc_wallet')
 async def bitcoin_wallet():
     private_key = random_key()
     pubilc_key = privtopub(private_key)
@@ -391,10 +431,83 @@ async def bitcoin_wallet():
             "address" :  address
              }
 
+
+
+# This library simplify the process of creating new wallets for the BTC, BTG, BCH, ETH, LTC, DASH and DOGE 
+
+# generate 12 word mnemonic seed
+@app.get('/api/LTC_wallet')
+async def Litecoin_wallet() -> dict():
+    seed = wallet.generate_mnemonic()
+
+    # create litecoin wallet
+    w = wallet.create_wallet(network="LTC", seed=seed)
+    data = w
+    
+    return{"public_key" : data["public_key"],
+           "seed"     : seed,
+           "Litecoin_wallet" : data["address"],
+           "private_key"  : data["private_key"],
+           "xprivate_key" : data["xprivate_key"],
+           "xpublic_key"  : data["xpublic_key"],
+           "children"  : data["children"],
+           }
+
+@app.get('/api/BTC_HD_wallet')
+async def BTC_HD__wallet() -> dict():
+    seed = wallet.generate_mnemonic()
+
+    # create BTC_HD_ wallet
+    w = wallet.create_wallet(network="BTC", seed=seed)
+    data = w
+    
+    return{"public_key" : data["public_key"],
+           "seed"     : seed,
+           "BTC_HD__wallet" : data["address"],
+           "private_key"  : data["private_key"],
+           "xprivate_key" : data["xprivate_key"],
+           "xpublic_key"  : data["xpublic_key"],
+           "children"  : data["children"],
+           }
+
+@app.get('/api/BCH_wallet')
+async def Bitcoin_Cash_wallet() -> dict():
+    seed = wallet.generate_mnemonic()
+
+    # create  Bitcoin Cash wallet
+    w = wallet.create_wallet(network="BCH", seed=seed)
+    data = w
+    
+    return{"public_key" : data["public_key"],
+           "seed"     : seed,
+           "Bitcoin_Cash_wallet" : data["address"],
+           "private_key"  : data["private_key"],
+           "xprivate_key" : data["xprivate_key"],
+           "xpublic_key"  : data["xpublic_key"],
+           "children"  : data["children"],}
+    
+    
+@app.get('/api/DASH_wallet')
+async def DASH_wallet() -> dict():
+    seed = wallet.generate_mnemonic()
+
+    # create  DASH wallet
+    w = wallet.create_wallet(network="DASH", seed=seed)
+    data = w
+    
+    return{"public_key" : data["public_key"],
+           "seed"     : seed,
+           "DASH_wallet" : data["address"],
+           "private_key"  : data["private_key"],
+           "xprivate_key" : data["xprivate_key"],
+           "xpublic_key"  : data["xpublic_key"],
+           "children"  : data["children"],}
    
- 
 
 
+
+
+    
 """@app.get('/')
 async def index(background_tasks: BackgroundTasks):
     background_tasks.add_task(main)
@@ -450,8 +563,3 @@ listData = [
         "coin_logo": "assets\/img\/xlm.png"
     }
 ]
-
-
-"""
-sechmos
-"""
