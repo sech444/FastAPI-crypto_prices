@@ -10,7 +10,7 @@ from random import randrange
 from fastapi.security import OAuth2PasswordBearer
 import secrets
 from eth_account import Account
-from pywallet import wallet
+#from pywallet import wallet
 #from ethereumweb3 import Get_bals , send_transactions, transaction_receipt
 from fastapi import FastAPI, WebSocket, BackgroundTasks, APIRouter, Depends, status, HTTPException, Form
 import json
