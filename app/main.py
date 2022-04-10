@@ -4,8 +4,9 @@ from web3 import Web3, EthereumTesterProvider,HTTPProvider
 from uuid import uuid4
 from fastapi.params import Body
 from pydantic import BaseModel 
-#from bitcoinlib.wallets import Wallet, wallet_delete
-from bitcoinlib.mnemonic import Mnemonic
+import binascii
+from py_crypto_hd_wallet import HdWalletBip44Coins, HdWalletBipChanges, HdWalletBipFactory, HdWalletSubstrateWordsNum
+from bit import Key
 from random import randrange
 from fastapi.security import OAuth2PasswordBearer
 import secrets
@@ -24,7 +25,7 @@ import os
 
 
 load_dotenv()
-API_KEY = os.getenv("ID")
+API_KEY = os.getenv("API_KEY")
 SECRET_KEY = os.getenv("SECRET_KEY")
 BASE_URL = 'https://api.binance.com'
 
@@ -144,42 +145,7 @@ async def index_bch(background_tasks: BackgroundTasks):
         "coin_logo": "assets\/img\/bch.png"
     }
 
-"""
-def getXlmucoinPrice(crypto_xlmusd):
-    URL = 'https://www.bitstamp.net/api/v2/ticker/xlmusd/'
-    try:
-        r = requests.get(URL)
-        priceFloat = float(json.loads(r.text)['last'])
-        return priceFloat
-    except requests.ConnectionError:
-        print("Error querying Bitstamp API")
 
-
-def main_xlmusd():
-    last_price = -1
-
-    while True:
-
-        crypto_xlmusd = 'xlmusd'
-        price = getXlmucoinPrice(crypto_xlmusd)
-
-        if price != last_price:
-           # print('Bitcoin price: ',price)
-            last_price = price
-    return
-
-
-
-@app.get('/api/v1/bch')
-async def index_bch(background_tasks: BackgroundTasks):
-    background_tasks.add_task(main_bch)
-    return {
-        "coin": "BCH",
-        "name": "Bitcoin Cash",
-        "rate": get_price_bch("bitcoin_cash"),
-        "coin_logo": "assets\/img\/bch.png"
-    }
-"""
 
 def getethercoinPrice(crypto_ether):
     URL = 'https://www.bitstamp.net/api/v2/ticker/ethusd/'
@@ -421,27 +387,6 @@ async def transaction_receipt(background_tasks:BackgroundTasks,tx_hash:str = For
 
     return {"data" : w3.toJSON(receipt_ )}
 
-@app.get('/api/v1/api/ether_wallet')
-async def eth_wallet():
-    priv = secrets.token_hex(32)
-    private_key = "0x" + priv
-    acct = Account.from_key(private_key)
-    return{"private_key": private_key,
-           "address": acct.address}
-
-
-
-@app.get('/api/v1/api/btc_wallet')
-async def bitcoin_wallet():
-    private_key = random_key()
-    pubilc_key = privtopub(private_key)
-    address = pubtoaddr(pubilc_key)
-    
-    return {"private_key":private_key,
-            "pubilc_key": pubilc_key,
-            "address" :  address
-             }
-
 
 
  
@@ -552,15 +497,254 @@ def create_Order(symbol: str = Form(...),buy_or_sell: str = Form(...),quantity: 
 
     url = urljoin(BASE_URL, PATH)
     r = requests.post(url, headers=headers, params=params)
-    if r.status_code == 200:
-        data = r.json()
-        print(data)
-    else:
-        print(EnvironmentError)
-        #raise BinanceException(status_code=r.status_code, data=r.json())
+    data = r.json()
     return{"data" : json.dumps(data, indent=2)}
 
+
+@app.post("/api/v1/bnb_bals")
+def bnb_bals(wallet_id: str=Form(...) ):
+    bsc = "https://bsc-dataseed.binance.org/"
+    w3 = Web3(Web3.HTTPProvider(bsc))
+    address = wallet_id
+    balance = w3.eth.get_balance(address)
+    result = w3.fromWei(balance,'ether')
+    return{"balance": result}
+
+@app.post("/api/v1/bitcoin_bals")
+def bitcoin_bals(bitcoin_bals_key: str=Form(...)):
+    my_key = bitcoin_bals_key
+    print(my_key)
+    data = my_key.get_balance('usd')
+    print(data)
+    return{"bitcoin_bals": data}
+
+
+
+@app.post("/api/v1/create_btc_wallet")
+def btc_wallet(wallet_name: str = Form(...)):
+    # Create factory
+    hd_wallet_fact = HdWalletBipFactory(HdWalletBip44Coins.BITCOIN)
+    # Create random
+    hd_wallet = hd_wallet_fact.CreateRandom(wallet_name.upper(), HdWalletSubstrateWordsNum.WORDS_NUM_12,)
+
+    # Generate with default parameters
+    hd_wallet.Generate(addr_num=1,subaddr_off=1)
+    # Specify parameters (it'll generate addresses from index 10 to 15)
+    #hd_wallet.Generate()
+    wallet_data = hd_wallet.ToDict()
+    # After generated, you can check if the wallet is watch-only with the IsWatchOnly method
+    is_wo = hd_wallet.IsWatchOnly()
+    return{"wallet_name": wallet_data["wallet_name"],
+           "coin_name": wallet_data["coin_name"],
+           "mnemonic": wallet_data["mnemonic"],
+            "master_key": wallet_data["master_key"],
+           "address":wallet_data["address"],
+            "seed": wallet_data["seed_bytes"],
+            "account_key": wallet_data["account_key"],
+            "purpose_key" : wallet_data["purpose_key"],
+            "coin_key"  : wallet_data["coin_key"]
+            }
     
+    
+@app.post("/api/v1/create_tron_wallet")
+def TRON_wallet(wallet_name: str = Form(...)):
+    # Create factory
+    hd_wallet_fact = HdWalletBipFactory(HdWalletBip44Coins.TRON)
+    # Create random
+    hd_wallet = hd_wallet_fact.CreateRandom(wallet_name.upper(), HdWalletSubstrateWordsNum.WORDS_NUM_12,)
+    # Generate with default parameters
+    hd_wallet.Generate(addr_num=1)
+    # Specify parameters (it'll generate addresses from index 10 to 15)
+    #hd_wallet.Generate()
+    wallet_data = hd_wallet.ToDict()
+    # After generated, you can check if the wallet is watch-only with the IsWatchOnly method
+    is_wo = hd_wallet.IsWatchOnly()
+    return{"wallet_name": wallet_data["wallet_name"],
+           "coin_name": wallet_data["coin_name"],
+           "mnemonic": wallet_data["mnemonic"],
+            "master_key": wallet_data["master_key"],
+           "address":wallet_data["address"],
+            "seed": wallet_data["seed_bytes"],
+            "account_key": wallet_data["account_key"],
+            "purpose_key" : wallet_data["purpose_key"],
+            "coin_key"  : wallet_data["coin_key"]
+            }
+    
+
+@app.post("/api/v1/create_ethereum_wallet")
+def ETHEREUM_wallet(wallet_name: str = Form(...)):
+    # Create factory
+    hd_wallet_fact = HdWalletBipFactory(HdWalletBip44Coins.ETHEREUM)
+    # Create random
+    hd_wallet = hd_wallet_fact.CreateRandom(wallet_name.upper(), HdWalletSubstrateWordsNum.WORDS_NUM_12,)
+
+    # Generate with default parameters
+    hd_wallet.Generate(addr_num=1)
+    # Specify parameters (it'll generate addresses from index 10 to 15)
+    #hd_wallet.Generate()
+    wallet_data = hd_wallet.ToDict()
+    # After generated, you can check if the wallet is watch-only with the IsWatchOnly method
+    is_wo = hd_wallet.IsWatchOnly()
+    return{"wallet_name": wallet_data["wallet_name"],
+           "coin_name": wallet_data["coin_name"],
+           "mnemonic": wallet_data["mnemonic"],
+            "master_key": wallet_data["master_key"],
+           "address":wallet_data["address"],
+            "seed": wallet_data["seed_bytes"],
+            "account_key": wallet_data["account_key"],
+            "purpose_key" : wallet_data["purpose_key"],
+            "coin_key"  : wallet_data["coin_key"]
+            }
+    
+@app.post("/api/v1/create_litecoin_wallet")
+def LITECOIN_wallet(wallet_name: str = Form(...)):
+    # Create factory
+    hd_wallet_fact = HdWalletBipFactory(HdWalletBip44Coins.LITECOIN)
+    # Create random
+    hd_wallet = hd_wallet_fact.CreateRandom(wallet_name.upper(), HdWalletSubstrateWordsNum.WORDS_NUM_12,)
+
+    # Generate with default parameters
+    hd_wallet.Generate(addr_num=1)
+    # Specify parameters (it'll generate addresses from index 10 to 15)
+    #hd_wallet.Generate()
+    wallet_data = hd_wallet.ToDict()
+    # After generated, you can check if the wallet is watch-only with the IsWatchOnly method
+    is_wo = hd_wallet.IsWatchOnly()
+    return{"wallet_name": wallet_data["wallet_name"],
+           "coin_name": wallet_data["coin_name"],
+           "mnemonic": wallet_data["mnemonic"],
+            "master_key": wallet_data["master_key"],
+           "address":wallet_data["address"],
+            "seed": wallet_data["seed_bytes"],
+            "account_key": wallet_data["account_key"],
+            "purpose_key" : wallet_data["purpose_key"],
+            "coin_key"  : wallet_data["coin_key"]
+            }
+    
+@app.post("/api/v1/create_stellar_wallet")
+def STELLAR_wallet(wallet_name: str = Form(...)):
+    # Create factory
+    hd_wallet_fact = HdWalletBipFactory(HdWalletBip44Coins.STELLAR)
+    # Create random
+    hd_wallet = hd_wallet_fact.CreateRandom(wallet_name.upper(), HdWalletSubstrateWordsNum.WORDS_NUM_12,)
+
+    # Generate with default parameters
+    hd_wallet.Generate(addr_num=1)
+    # Specify parameters (it'll generate addresses from index 10 to 15)
+    #hd_wallet.Generate()
+    wallet_data = hd_wallet.ToDict()
+    # After generated, you can check if the wallet is watch-only with the IsWatchOnly method
+    is_wo = hd_wallet.IsWatchOnly()
+    return{"wallet_name": wallet_data["wallet_name"],
+           "coin_name": wallet_data["coin_name"],
+           "mnemonic": wallet_data["mnemonic"],
+            "master_key": wallet_data["master_key"],
+           "address":wallet_data["address"],
+            "seed": wallet_data["seed_bytes"],
+            "account_key": wallet_data["account_key"],
+            "purpose_key" : wallet_data["purpose_key"],
+            "coin_key"  : wallet_data["coin_key"]
+            }
+@app.post("/api/v1/create_ripple_wallet")
+def RIPPLE_wallet(wallet_name: str = Form(...)):
+    # Create factory
+    hd_wallet_fact = HdWalletBipFactory(HdWalletBip44Coins.RIPPLE)
+    # Create random
+    hd_wallet = hd_wallet_fact.CreateRandom(wallet_name.upper(), HdWalletSubstrateWordsNum.WORDS_NUM_12,)
+
+    # Generate with default parameters
+    hd_wallet.Generate(addr_num=1)
+    # Specify parameters (it'll generate addresses from index 10 to 15)
+    #hd_wallet.Generate()
+    wallet_data = hd_wallet.ToDict()
+    # After generated, you can check if the wallet is watch-only with the IsWatchOnly method
+    is_wo = hd_wallet.IsWatchOnly()
+    return{"wallet_name": wallet_data["wallet_name"],
+           "coin_name": wallet_data["coin_name"],
+           "mnemonic": wallet_data["mnemonic"],
+            "master_key": wallet_data["master_key"],
+           "address":wallet_data["address"],
+            "seed": wallet_data["seed_bytes"],
+            "account_key": wallet_data["account_key"],
+            "purpose_key" : wallet_data["purpose_key"],
+            "coin_key"  : wallet_data["coin_key"]
+            }
+    
+@app.post("/api/v1/create_dash_wallet")
+def DASH_wallet(wallet_name: str = Form(...)):
+    # Create factory
+    hd_wallet_fact = HdWalletBipFactory(HdWalletBip44Coins.DASH)
+    # Create random
+    hd_wallet = hd_wallet_fact.CreateRandom(wallet_name, HdWalletSubstrateWordsNum.WORDS_NUM_12,)
+
+    # Generate with default parameters
+    hd_wallet.Generate(addr_num=1)
+    # Specify parameters (it'll generate addresses from index 10 to 15)
+    #hd_wallet.Generate()
+    wallet_data = hd_wallet.ToDict()
+    # After generated, you can check if the wallet is watch-only with the IsWatchOnly method
+    is_wo = hd_wallet.IsWatchOnly()
+    return{"wallet_name": wallet_data["wallet_name"],
+           "coin_name": wallet_data["coin_name"],
+           "mnemonic": wallet_data["mnemonic"],
+            "master_key": wallet_data["master_key"],
+           "address":wallet_data["address"],
+            "seed": wallet_data["seed_bytes"],
+            "account_key": wallet_data["account_key"],
+            "purpose_key" : wallet_data["purpose_key"],
+            "coin_key"  : wallet_data["coin_key"]
+            }
+    
+@app.post("/api/v1/create_btc_cash_wallet")
+def BITCOIN_CASH_wallet(wallet_name: str = Form(...)):
+    # Create factory
+    hd_wallet_fact = HdWalletBipFactory(HdWalletBip44Coins.BITCOIN_CASH)
+    # Create random
+    hd_wallet = hd_wallet_fact.CreateRandom(wallet_name.upper(), HdWalletSubstrateWordsNum.WORDS_NUM_12,)
+
+    # Generate with default parameters
+    hd_wallet.Generate(addr_num=1)
+    # Specify parameters (it'll generate addresses from index 10 to 15)
+    #hd_wallet.Generate()
+    wallet_data = hd_wallet.ToDict()
+    # After generated, you can check if the wallet is watch-only with the IsWatchOnly method
+    is_wo = hd_wallet.IsWatchOnly()
+    return{"wallet_name": wallet_data["wallet_name"],
+           "coin_name": wallet_data["coin_name"],
+           "mnemonic": wallet_data["mnemonic"],
+            "master_key": wallet_data["master_key"],
+           "address":wallet_data["address"],
+            "seed": wallet_data["seed_bytes"],
+            "account_key": wallet_data["account_key"],
+            "purpose_key" : wallet_data["purpose_key"],
+            "coin_key"  : wallet_data["coin_key"]
+            }
+    
+@app.post("/api/v1/create_binance_smart_chain_wallet")
+def BINANCE_SMART_CHAIN_wallet(wallet_name: str = Form(...)):
+    # Create factory
+    hd_wallet_fact = HdWalletBipFactory(HdWalletBip44Coins.BINANCE_SMART_CHAIN)
+    # Create random
+    hd_wallet = hd_wallet_fact.CreateRandom(wallet_name.upper(), HdWalletSubstrateWordsNum.WORDS_NUM_12,)
+
+    # Generate with default parameters
+    hd_wallet.Generate(addr_num=1,subaddr_off=0)
+    # Specify parameters (it'll generate addresses from index 10 to 15)
+    #hd_wallet.Generate()
+    wallet_data = hd_wallet.ToDict()
+    # After generated, you can check if the wallet is watch-only with the IsWatchOnly method
+    is_wo = hd_wallet.IsWatchOnly()
+    return{"wallet_name": wallet_data["wallet_name"],
+           "coin_name": wallet_data["coin_name"],
+           "mnemonic": wallet_data["mnemonic"],
+            "master_key": wallet_data["master_key"],
+           "address":wallet_data["address"],
+            "seed": wallet_data["seed_bytes"],
+            "account_key": wallet_data["account_key"],
+            "purpose_key" : wallet_data["purpose_key"],
+            "coin_key"  : wallet_data["coin_key"]
+            }
+
 
 listData = [
     {
