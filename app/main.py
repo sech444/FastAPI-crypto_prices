@@ -175,7 +175,7 @@ def main_ether():
 async def index_ether(background_tasks: BackgroundTasks):
     background_tasks.add_task(main_ether)
     return {
-        "coin": "ether",
+        "coin": "ETH",
         "name": "Ethereum",
         "rate": getethercoinPrice("ether"),
         "coin_logo": "assets\/img\/ether.png"
@@ -377,7 +377,7 @@ async def tarnsaction(background_tasks:BackgroundTasks,account_from:str = Form(.
 
 @app.post('/api/v1/api/tx_hash')
 async def transaction_receipt(background_tasks:BackgroundTasks,tx_hash:str = Form(...),webhook_url:str = Form(...)) -> dict():
-    receipt_ = w3.eth.get_transaction_receipt(tx_hash)
+    receipt_ = w3.eth.get_transaction(tx_hash)
     w3.toJSON(receipt_ )
     data = {
         'acc': 'transaction',
@@ -784,14 +784,14 @@ listData = [
         "coin_logo": "assets\/img\/xlm.png"
     },
     {
-        "coin": "ether",
+        "coin": "ETH",
         "name": "Ethereum",
         "rate": getethercoinPrice("ether"),
         "coin_logo": "assets\/img\/ether.png"
     },
     {
         "coin": "BNB",
-        "name": "Binance Coin",
+        "name": "Binance ",
         "rate": getbnbusdtprice("Binance_Coin"),
         "coin_logo": "assets\/img\/bnb.png"
     
