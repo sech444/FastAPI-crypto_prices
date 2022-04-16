@@ -595,6 +595,63 @@ def ETHEREUM_wallet(wallet_name: str = Form(...)):
             "purpose_key" : wallet_data["purpose_key"],
             "coin_key"  : wallet_data["coin_key"]
             }
+
+
+@app.post("/api/v1/create_usdt_erc20_wallet")
+def USDT_ERC20_wallet(wallet_name: str = Form(...)):
+    # Create factory
+    hd_wallet_fact = HdWalletBipFactory(HdWalletBip44Coins.ETHEREUM)
+    # Create random
+    hd_wallet = hd_wallet_fact.CreateRandom(wallet_name.upper(), HdWalletSubstrateWordsNum.WORDS_NUM_12,)
+
+    # Generate with default parameters
+    hd_wallet.Generate(addr_num=1)
+    # Specify parameters (it'll generate addresses from index 10 to 15)
+    #hd_wallet.Generate()
+    wallet_data = hd_wallet.ToDict()
+    # After generated, you can check if the wallet is watch-only with the IsWatchOnly method
+    is_wo = hd_wallet.IsWatchOnly()
+    return{"wallet_name": wallet_data["wallet_name"],
+           "coin_name": wallet_data["coin_name"],
+           "mnemonic": wallet_data["mnemonic"],
+            "master_key": wallet_data["master_key"],
+           "address":wallet_data["address"],
+            "seed": wallet_data["seed_bytes"],
+            "account_key": wallet_data["account_key"],
+            "purpose_key" : wallet_data["purpose_key"],
+            "coin_key"  : wallet_data["coin_key"]
+            }
+
+
+
+@app.post("/api/v1/create_usdt_bep20_wallet")
+def USDT_BEP20_wallet(wallet_name: str = Form(...)):
+    # Create factory
+    hd_wallet_fact = HdWalletBipFactory(HdWalletBip44Coins.BINANCE_SMART_CHAIN)
+    # Create random
+    hd_wallet = hd_wallet_fact.CreateRandom(wallet_name.upper(), HdWalletSubstrateWordsNum.WORDS_NUM_12,)
+
+    # Generate with default parameters
+    hd_wallet.Generate(addr_num=1)
+    # Specify parameters (it'll generate addresses from index 10 to 15)
+    #hd_wallet.Generate()
+    wallet_data = hd_wallet.ToDict()
+    # After generated, you can check if the wallet is watch-only with the IsWatchOnly method
+    is_wo = hd_wallet.IsWatchOnly()
+    return{"wallet_name": wallet_data["wallet_name"],
+           "coin_name": wallet_data["coin_name"],
+           "mnemonic": wallet_data["mnemonic"],
+            "master_key": wallet_data["master_key"],
+           "address":wallet_data["address"],
+            "seed": wallet_data["seed_bytes"],
+            "account_key": wallet_data["account_key"],
+            "purpose_key" : wallet_data["purpose_key"],
+            "coin_key"  : wallet_data["coin_key"]
+            }
+
+
+
+
     
 @app.post("/api/v1/create_litecoin_wallet")
 def LITECOIN_wallet(wallet_name: str = Form(...)):
